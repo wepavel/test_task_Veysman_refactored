@@ -1,0 +1,20 @@
+[project]
+name = "test-task-veysman-refactored"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aiofiles>=24.1.0",
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.13",
+    "psycopg2-binary>=2.9.10",
+    "pydantic-settings>=2.10.1",
+    "python-logstash>=0.4.8",
+    "python-ulid>=3.0.0",
+    "pytz>=2025.2",
+    "pyyaml>=6.0.2",
+    "sqlalchemy-utils>=0.41.2",
+    "sqlmodel>=0.0.24",
+    "uvicorn[standard]>=0.34.3",
+]
