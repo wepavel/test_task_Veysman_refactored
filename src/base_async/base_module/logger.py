@@ -3,6 +3,8 @@ import logging
 
 
 class ContextFilter(logging.Filter):
+    """."""
+
     def filter(self, record):
         frame = inspect.currentframe()
         while frame:
@@ -44,22 +46,27 @@ logging.basicConfig(
 
 
 class EndpointFilter(logging.Filter):
+    """."""
+
     def __init__(self, path):
         self.path = path
 
     def filter(self, record):
         return record.args and len(record.args) >= 3 and record.args[2] != self.path
 
+
 __logger = logging.getLogger('app_logger')
+
 
 def setup_logging(log_level: str) -> None:
     # Disable logging for ping
-    logging.getLogger('uvicorn.access').addFilter(EndpointFilter('/api/v1/heartbeat/service-heartbeat/ping'))
+    logging.getLogger('uvicorn.access').addFilter(EndpointFilter('/api/healthcheck/healthcheck'))
 
     __logger.setLevel(log_level)
     context_filter = ContextFilter()
     __logger.addFilter(context_filter)
     __logger.info('Init')
+
 
 def get_logger() -> logging.Logger:
     return __logger

@@ -1,1 +1,1 @@
-from .pg import AsyncPgConnectionInj
+from .pg import AsyncPgConnectionInj  # noqa: F401

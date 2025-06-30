@@ -1,45 +1,41 @@
-import json
 from enum import Enum
+import json
 from typing import Any
 
-from fastapi import FastAPI
-from fastapi import HTTPException
-from fastapi import Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlmodel import SQLModel
-# from pydantic import BaseModel, Field
-from sqlmodel import Field
+from sqlmodel import Field, SQLModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
 class ModuleExceptionPayload(SQLModel, table=False):
+    """."""
+
     prefix: str = 'ModuleException'
 
     msg: str
     code: int = Field(default=500)
     data: dict[str, Any] = Field(default_factory=dict)
 
-    def __repr__(self):
-        name = type(self).__name__
-        return f'{name}({self}) {self.code} {self.data}'
 
 class ModuleException(Exception):
+    """."""
+
+    prefix = 'ModuleException'
+
     def __init__(
         self,
         msg: str | ModuleExceptionPayload,
         code: int = 500,
         data: dict[str, Any] = None,
     ):
+        """."""
         if isinstance(msg, ModuleExceptionPayload):
             self.payload = msg
         else:
-            self.payload = ModuleExceptionPayload(
-                msg=msg,
-                code=code,
-                data=data or {}
-            )
+            self.payload = ModuleExceptionPayload(msg=msg, code=code, data=data or {})
         super().__init__(self.payload.msg)
 
     def __repr__(self):
@@ -51,15 +47,21 @@ class ModuleException(Exception):
     def json(self):
         return self.payload.model_dump_json()
 
+
 class ResponseException(ModuleExceptionPayload):
+    """."""
+
     custom: bool = Field(default=True, exclude=True)
+
 
 class ErrorCode(Enum):
     #  4000: Bad Request
     BadRequest = ResponseException(code=4000, msg='Bad Request')
     #  4021 - 4040: User Management Errors
     CouldNotValidateUserCreds = ResponseException(code=4021, msg='Could not validate credentials: ValidationError')
-    UserExpiredSignatureError = ResponseException(code=4022, msg='Could not validate credentials: ExpiredSignatureError')
+    UserExpiredSignatureError = ResponseException(
+        code=4022, msg='Could not validate credentials: ExpiredSignatureError'
+    )
     IncorrUserCreds = ResponseException(code=4023, msg='Incorrect login or password')
     NotAuthenticated = ResponseException(code=4030, msg='Not authenticated')
     InactiveUser = ResponseException(code=4032, msg='Inactive user')
@@ -68,7 +70,6 @@ class ErrorCode(Enum):
     UserExists = ResponseException(code=4036, msg='The user already exists in the system')
     #  4041 - 4060: Project Management Errors
     ProjectLocked = ResponseException(code=4041, msg='Project locked')
-
     NameAlreadyExists = ResponseException(code=4044, msg='This name already exists')
 
     #  4061 - 4080: Task Management Errors
@@ -106,13 +107,14 @@ class ErrorCode(Enum):
     #  5061 - 5999: System and Server Errors
 
 
-
 HTTP_2_CUSTOM_ERR: dict[int, ResponseException] = {
     422: ResponseException(code=4400, msg='Validation error', custom=False),
 }
 
 
 class EXC(HTTPException):
+    """."""
+
     def __init__(
         self,
         exc: ErrorCode,
@@ -123,11 +125,12 @@ class EXC(HTTPException):
             update={'data': data},
         )
 
-        super().__init__(status_code=400, detail=error_response.model_dump_json())
+        test = error_response.model_dump_json()
+        super().__init__(status_code=400, detail=error_response.model_dump_json(), headers=None)
 
 
 def exception_handler(app: FastAPI) -> None:
-    def create_error_response(error_response: ModuleException) -> JSONResponse:
+    def create_error_response(error_response: ResponseException) -> JSONResponse:
         data = error_response.data.copy()
 
         if data.get('reason') is None:
@@ -155,7 +158,7 @@ def exception_handler(app: FastAPI) -> None:
             ),
         )
 
-    def parse_error_detail(detail: str | dict) -> ModuleException:
+    def parse_error_detail(detail: str | dict) -> ResponseException:
         if isinstance(detail, str):
             try:
                 error_dict = json.loads(detail)
@@ -164,24 +167,24 @@ def exception_handler(app: FastAPI) -> None:
         else:
             error_dict = detail
 
-        return ModuleException(**error_dict)
+        return ResponseException(**error_dict)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
         error = parse_error_detail(exc.detail)
-        error.details['endpoint'] = request.url.path
+        error.data['endpoint'] = request.url.path
         return create_error_response(error)
 
     @app.exception_handler(StarletteHTTPException)
     async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
         error = parse_error_detail(exc.detail)
-        error.details['endpoint'] = request.url.path
+        error.data['endpoint'] = request.url.path
         return create_error_response(error)
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         error = ErrorCode.ValidationError.value
-        error.details = {
+        error.data = {
             'endpoint': request.url.path,
             'errors': exc.errors(),
         }

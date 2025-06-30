@@ -1,6 +1,11 @@
 pg:
-  host: localhost
-  port: 5433
+  host: test_db
+  port: 5432
   user: postgres
   password: postgres
   database: postgres_123
+
+storage_dir: file_storage
+
+timezone: 'Europe/Moscow'
+

@@ -1,0 +1,49 @@
+services:
+  backend:
+    container_name: '${DOCKER_IMAGE_BACKEND}'
+    image: '${DOCKER_IMAGE_BACKEND}:${TAG-latest}'
+#    env_file:
+#      - .env
+    environment:
+      - BASE_STORAGE_DIR=/file_storage
+      - HOST=0.0.0.0
+      - PORT=8023
+      - DOCKER_IMAGE_BACKEND=test_backend
+      - PROJECT_NAME="Test Task Veysman Refactored"
+      - PROJECT_DESK="New refactored version of test task"
+
+    volumes:
+      - .:/src/
+      - /etc/localtime:/etc/localtime:ro
+      - ./file_storage:/file_storage
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/healthcheck/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  db:
+    container_name: test_db
+    image: postgres:17-bookworm
+    volumes:
+      - pgdata:/var/lib/postgresql/data/pgdata  # Создаю папку в текущей директории для наглядности, но её можно и в volumes
+      - /etc/localtime:/etc/localtime:ro
+#    env_file:
+#      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: always
+
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  pgdata:

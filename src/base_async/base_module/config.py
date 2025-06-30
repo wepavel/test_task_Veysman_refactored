@@ -1,6 +1,9 @@
-from . import Model
-from sqlmodel import Field
 import os
+
+from sqlmodel import Field
+
+from .model import Model
+
 
 class PgConfig(Model):
     """."""
@@ -13,6 +16,7 @@ class PgConfig(Model):
     max_pool_connections: int = Field(default=100)
     debug: bool = Field(default=False)
     schema: str = Field(default='public')
+
 
 class ExternalPgConfig(PgConfig):
     """."""
