@@ -39,13 +39,13 @@ async def update_file(
     return await fs.update_file(update, old_file_path)
 
 
-@router.get('/download-file/{file_path:path}')
+@router.get('/download-file/{file_dest_dir:path}')
 async def download_file(
     *,
     fs: FilesService = Depends(files_service),
-    file_path: str,
+    file_dest_dir: str,
 ) -> StreamingResponse:
-    file_generator, filename = await fs.get_file(file_path)
+    file_generator, filename = await fs.get_file(file_dest_dir)
 
     return StreamingResponse(
         file_generator,
