@@ -1,9 +1,9 @@
 from typing import Any
 
-from ..base_module.model import BaseOrmMappedModel
+from ..base_module.model import Model
 
 
-class BaseOrmModel(BaseOrmMappedModel):
+class BaseOrmModel(Model):
     """."""
 
     id: Any

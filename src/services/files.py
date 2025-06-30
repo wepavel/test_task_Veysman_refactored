@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
+from logging import getLogger
 import os
 from pathlib import Path
 import shutil
@@ -9,7 +10,7 @@ import aiofiles
 from fastapi import UploadFile
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.base_async.base_module import EXC, ErrorCode, get_logger
+from src.base_async.base_module import EXC, ErrorCode
 from src.base_async.services import TimezoneService
 
 from ..base_async.services import SessionProviderService
@@ -65,7 +66,7 @@ class FilesService:
     ):
         """."""
         self.base_dir = base_dir
-        self._logger = get_logger()
+        self._logger = getLogger()
         self._tz = tz
         self._pg = pg
         self._session_provider = session_provider

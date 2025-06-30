@@ -1,31 +1,24 @@
 services:
   backend:
-    container_name: '${DOCKER_IMAGE_BACKEND}'
-    image: '${DOCKER_IMAGE_BACKEND}:${TAG-latest}'
-    environment:
-      - BASE_STORAGE_DIR=/file_storage
-      - HOST=0.0.0.0
-      - PORT=8023
-      - DOCKER_IMAGE_BACKEND=test_backend
-      - PROJECT_NAME="Test Task Veysman Refactored"
-      - PROJECT_DESK="New refactored version of test task"
+    container_name: test_backend
+    image: 'test_backend:latest'
+    depends_on:
+      - test_db
+    build:
+      context: ./
     volumes:
       - .:/src/
       - /etc/localtime:/etc/localtime:ro
-      - ./file_storage:/file_storage
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/api/healthcheck/healthcheck"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 5s
+    ports:
+      - "8023:8001"
+    command: ["python", "./src/app.py"]
 
-  db:
+  test_db:
     container_name: test_db
     image: postgres:17-bookworm
     volumes:
-      - pgdata:/var/lib/postgresql/data/pgdata
+      - test_pgdata:/var/lib/postgresql/data/pgdata
       - /etc/localtime:/etc/localtime:ro
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
@@ -33,11 +26,9 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=postgres
     restart: always
-    healthcheck:
-      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-
+    expose:
+      - 5432
+    ports:
+      - "5434:5432"
 volumes:
-  pgdata:
+  test_pgdata:

@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlmodel import Column, DateTime, Field, SQLModel, UniqueConstraint
 from ulid import ULID
 
-from src.base_async.base_module.model import BaseOrmMappedModel
+from src.base_async.base_module.model import Model
 
 SCHEMA_NAME = 'external_modules'
 
@@ -41,7 +41,7 @@ class FilePublic(SQLModel, table=False):
     comment: str | None
 
 
-class File(BaseOrmMappedModel, table=True):
+class File(Model, table=True):
     """."""
 
     id: UUID | None = Field(primary_key=True, index=True, default=ULID.from_timestamp(time.time()).to_uuid())

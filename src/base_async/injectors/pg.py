@@ -1,15 +1,14 @@
-from sqlalchemy.engine.url import URL
+from logging import getLogger
 
-from src.base_async.base_module.logger import get_logger
+from sqlalchemy.engine.url import URL
 
 from ..base_module import (
     PgConfig,
-    ThreadIsolatedSingleton,
 )
 from ..services.session_provider import SessionProviderService
 
 
-class AsyncPgConnectionInj(metaclass=ThreadIsolatedSingleton):
+class AsyncPgConnectionInj:
     """."""
 
     def __init__(
@@ -21,7 +20,7 @@ class AsyncPgConnectionInj(metaclass=ThreadIsolatedSingleton):
         self._conf = conf
         self._init_statements = init_statements or []
         # self._pg: async_scoped_session | AsyncSession | None = None
-        self._logger = get_logger()
+        self._logger = getLogger(__name__)
 
     def build_url(self, driver: str):
         return URL.create(

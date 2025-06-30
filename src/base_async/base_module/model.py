@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import abc
-from collections.abc import Generator
 from enum import Enum
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Any, TypeVar
 
-from pydantic import ConfigDict, model_validator
+from pydantic import ConfigDict
 from sqlmodel import SQLModel
 
 from .exception import ModuleException
@@ -101,38 +99,3 @@ def view(cls: type[Model]):
         return {k: data[k] for k in field_names if k in data}
 
     return _view
-
-
-class BaseOrmMappedModel(Model):
-    """."""
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        extra='ignore',
-    )
-
-
-MT = TypeVar('MT', bound=Model)
-
-
-class MetaModel(Model, Generic[MT], abc.ABC):
-    """."""
-
-    __key__: ClassVar[str]
-
-    @model_validator(mode='after')
-    def _load_metadata(self) -> MetaModel[MT]:
-        for name, field in self.model_fields.items():
-            meta_info = field.metadata.get(self.__key__)
-            if meta_info is not None:
-                raw = getattr(self, name)
-                # если передан словарь — парсим его, иначе оставляем как есть
-                obj: MT = meta_info.load(raw) if isinstance(raw, dict) else raw
-                object.__setattr__(self, name, obj)
-        return self
-
-    def iterate_metadata(self) -> Generator[tuple[str, MT], None, None]:
-        for name, field in self.model_fields.items():
-            meta_info = field.metadata.get(self.__key__)
-            if meta_info:
-                yield name, getattr(self, name)
