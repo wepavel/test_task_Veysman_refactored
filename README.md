@@ -101,8 +101,6 @@ pg:
   password: postgres
   database: postgres_123
 
-storage_dir: file_storage
-
 timezone: 'Europe/Moscow'
 ```
 
