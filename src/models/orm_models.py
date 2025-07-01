@@ -1,6 +1,6 @@
+import time
 from datetime import datetime, timezone
 from pathlib import Path
-import time
 from typing import Optional
 from uuid import UUID
 

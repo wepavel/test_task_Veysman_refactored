@@ -6,30 +6,27 @@ from fastapi.responses import StreamingResponse
 from src.injectors.services import files_service
 from src.services.files import FilePublic, FilesService, FileUpdate
 
-CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
-FILE_MAX_SIZE = 100 * 1024 * 1024  # 100 MB
-
-
 router = APIRouter()
 
 
 @router.post('/files/{dir_path:path}')
 async def create_file(
-    *,
-    fs: FilesService = Depends(files_service),
-    dir_path: str,
-    input_file: UploadFile = FastapiFile(..., max_size=FILE_MAX_SIZE),
+        *,
+        fs: FilesService = Depends(files_service),
+        dir_path: str,
+        input_file: UploadFile = FastapiFile(...),
+
 ) -> FilePublic:
     """Upload a file to storage at the given path."""
-    return await fs.add_file(dir_path, input_file, CHUNK_SIZE)
+    return await fs.add_file(dir_path, input_file)
 
 
 @router.patch('/files/{file_path:path}')
 async def update_file(
-    *,
-    fs: FilesService = Depends(files_service),
-    update: FileUpdate,
-    file_path: str,
+        *,
+        fs: FilesService = Depends(files_service),
+        update: FileUpdate,
+        file_path: str,
 ) -> FilePublic:
     """Update an existing file at the specified path."""
     return await fs.update_file(update, file_path)
@@ -37,9 +34,9 @@ async def update_file(
 
 @router.get('/files/{file_path:path}/download')
 async def download_file(
-    *,
-    fs: FilesService = Depends(files_service),
-    file_path: str,
+        *,
+        fs: FilesService = Depends(files_service),
+        file_path: str,
 ) -> StreamingResponse:
     """Download a file from storage."""
     file_generator, filename = await fs.get_file(file_path)
@@ -71,10 +68,10 @@ async def list_directory(*, fs: FilesService = Depends(files_service), dir_path:
 
 @router.get('/files')
 async def list_all_files(
-    *,
-    fs: FilesService = Depends(files_service),
-    skip: int = 0,
-    limit: int = 10,
+        *,
+        fs: FilesService = Depends(files_service),
+        skip: int = 0,
+        limit: int = 10,
 ) -> list[FilePublic]:
     """Get metadata for all files with pagination."""
     return await fs.list_all_files(skip=skip, limit=limit)

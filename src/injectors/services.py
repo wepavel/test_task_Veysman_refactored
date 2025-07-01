@@ -10,5 +10,6 @@ def files_service() -> FilesService:
         pg=CRUDFileService(),
         base_dir=config.storage_dir,
         tz=TimezoneService(config.timezone),
-        session_provider=connections.pg.get_session_provider(),
+        db_inj=connections.pg,
+        fc=config.file_config
     )
