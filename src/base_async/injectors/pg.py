@@ -101,3 +101,6 @@ class AsyncPgConnectionInj:
 
     async def setup(self):
         await self.init_db()
+
+    def get_session(self) -> async_scoped_session[AsyncSession]:
+        return self._pg

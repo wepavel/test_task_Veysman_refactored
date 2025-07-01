@@ -1,6 +1,6 @@
-import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
+import time
 from typing import Optional
 from uuid import UUID
 
@@ -32,6 +32,7 @@ class FileUpdate(SQLModel, table=False):
 class FilePublic(SQLModel, table=False):
     """."""
 
+    id: str
     name: str
     extension: str
     path: str
@@ -70,8 +71,8 @@ class File(Model, table=True):
 
         stat_info = p.stat()
         size = stat_info.st_size
-        created_at = datetime.now(timezone.utc)
-        updated_at = datetime.now(timezone.utc)
+        created_at = datetime.now()
+        updated_at = datetime.now()
         return File(
             id=ULID.from_timestamp(time.time()).to_uuid(),
             name=file_name,
@@ -83,20 +84,21 @@ class File(Model, table=True):
             comment=file.comment,
         )
 
-    def to_public_file(self, base_dir: str, current_timezone) -> FilePublic:
-        def format_time(dt) -> str | None:
-            if dt is None:
-                return None
-            time = dt.astimezone(current_timezone)
-            return time.isoformat()
+    @staticmethod
+    def format_time(dt) -> str | None:
+        if dt is None:
+            return None
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
 
+    def to_public_file(self, base_dir: str) -> FilePublic:
         return FilePublic(
+            id=str(self.id),
             name=self.name,
             extension=self.extension,
             # Remove the full path for increased security
             path=self.path.replace(str(Path(base_dir).resolve()), ''),
             size=self.size,
-            created_at=format_time(self.created_at),
-            updated_at=format_time(self.updated_at),
+            created_at=self.format_time(self.created_at),
+            updated_at=self.format_time(self.updated_at),
             comment=self.comment,
         )

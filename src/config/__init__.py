@@ -1,7 +1,7 @@
 import os
 
-import yaml
 from sqlmodel import Field
+import yaml
 
 from src.base_async.base_module import (
     ExternalPgConfig,
@@ -20,7 +20,6 @@ class ServiceConfig(Model):
 
     pg: ExternalPgConfig = Field()
     storage_dir: str = Field(default='storage')
-    timezone: str = Field()
     file_config: FileConfig = Field(default=FileConfig())
 
 

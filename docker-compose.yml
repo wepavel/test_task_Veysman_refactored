@@ -1,7 +1,7 @@
 services:
   backend:
-    container_name: test_backend
-    image: 'test_backend:latest'
+    container_name: files
+    image: 'backend:latest'
     depends_on:
       - test_db
     build:
@@ -14,8 +14,8 @@ services:
       - "8023:8001"
     command: ["python", "./src/app.py"]
 
-  test_db:
-    container_name: test_db
+  postgres:
+    container_name: database
     image: postgres:17-bookworm
     volumes:
       - test_pgdata:/var/lib/postgresql/data/pgdata

@@ -14,32 +14,33 @@ async def create_file(
         *,
         fs: FilesService = Depends(files_service),
         dir_path: str,
-        input_file: UploadFile = FastapiFile(...),
-
+        input_file: UploadFile = FastapiFile(
+            ...,
+        ),
 ) -> FilePublic:
     """Upload a file to storage at the given path."""
     return await fs.add_file(dir_path, input_file)
 
 
-@router.patch('/files/{file_path:path}')
+@router.patch('/files/{id}')
 async def update_file(
         *,
         fs: FilesService = Depends(files_service),
         update: FileUpdate,
-        file_path: str,
+        id: str,
 ) -> FilePublic:
     """Update an existing file at the specified path."""
-    return await fs.update_file(update, file_path)
+    return await fs.update_file(update, id)
 
 
-@router.get('/files/{file_path:path}/download')
+@router.get('/files/{id}/download')
 async def download_file(
         *,
         fs: FilesService = Depends(files_service),
-        file_path: str,
+        id: str,
 ) -> StreamingResponse:
     """Download a file from storage."""
-    file_generator, filename = await fs.get_file(file_path)
+    file_generator, filename = await fs.get_file(id)
 
     return StreamingResponse(
         file_generator,
@@ -48,22 +49,22 @@ async def download_file(
     )
 
 
-@router.get('/files/{file_path:path}')
-async def get_file_info(*, fs: FilesService = Depends(files_service), file_path: str) -> FilePublic:
+@router.get('/files/{id}')
+async def get_file_info(*, fs: FilesService = Depends(files_service), id: str) -> FilePublic:
     """Get metadata about a file."""
-    return await fs.get_file_info(file_path)
+    return await fs.get_file_info(id)
 
 
-@router.delete('/files/{file_path:path}')
-async def delete_file(*, fs: FilesService = Depends(files_service), file_path: str) -> FilePublic:
+@router.delete('/files/{id}')
+async def delete_file(*, fs: FilesService = Depends(files_service), id: str) -> FilePublic:
     """Delete a file from storage."""
-    return await fs.delete_file(file_path)
+    return await fs.delete_file(id)
 
 
-@router.get('/directories/{dir_path:path}')
-async def list_directory(*, fs: FilesService = Depends(files_service), dir_path: str) -> list[FilePublic]:
+@router.get('/prefix/{path:path}')
+async def list_directory(*, fs: FilesService = Depends(files_service), prefix: str) -> list[FilePublic]:
     """List contents of a directory."""
-    return await fs.list_dir(dir_path)
+    return await fs.list_dir(prefix)
 
 
 @router.get('/files')

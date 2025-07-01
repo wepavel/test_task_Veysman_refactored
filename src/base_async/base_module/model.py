@@ -80,7 +80,6 @@ class Model(SQLModel, table=False):
 
     def update(self, data: dict[str, Any]) -> None:
         patched = self.model_copy(update=data)
-        # перезаписываем self-поля
         for k, v in patched.model_dump().items():
             object.__setattr__(self, k, v)
 

@@ -1,21 +1,14 @@
 pg:
-  host: localhost
-  port: 5434
+  host: database
+  port: 5432
   user: postgres
   password: postgres
-  database: postgres_test
+  database: database
+  schema: 'external_modules'
 
 storage_dir: file_storage
 
 file_config:
   upload_chunk_size: 5242880
 
-#pg:
-#  host: test_db
-#  port: 5432
-#  user: postgres
-#  password: postgres
-#  database: postgres_123
-
-timezone: 'Europe/Moscow'
 

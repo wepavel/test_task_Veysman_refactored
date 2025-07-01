@@ -1,8 +1,8 @@
-import json
 from enum import Enum
+import json
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -98,60 +98,59 @@ class EXC(HTTPException):
         super().__init__(status_code=400, detail=error_response.model_dump_json(), headers=None)
 
 
-def exception_handler(app: FastAPI) -> None:
-    def create_error_response(error_response: ResponseException) -> JSONResponse:
-        data = error_response.data.copy()
+def create_error_response(error_response: ResponseException) -> JSONResponse:
+    data = error_response.data.copy()
 
-        if data.get('reason') is None:
-            data.pop('reason', None)
+    if data.get('reason') is None:
+        data.pop('reason', None)
 
-        if error_response.custom:
-            inner_code = error_response.code
-        elif error_response.code in HTTP_2_CUSTOM_ERR:
-            custom_error = HTTP_2_CUSTOM_ERR[error_response.code]
-            inner_code = custom_error.code
-            error_response.msg = custom_error.msg
-        else:
-            inner_code = 500
+    if error_response.custom:
+        inner_code = error_response.code
+    elif error_response.code in HTTP_2_CUSTOM_ERR:
+        custom_error = HTTP_2_CUSTOM_ERR[error_response.code]
+        inner_code = custom_error.code
+        error_response.msg = custom_error.msg
+    else:
+        inner_code = 500
 
-        return JSONResponse(
-            status_code=inner_code,
-            content=jsonable_encoder(
-                {
-                    'msg': error_response.msg,
-                    'data': data,
-                },
-            ),
-        )
+    return JSONResponse(
+        status_code=inner_code,
+        content=jsonable_encoder(
+            {
+                'msg': error_response.msg,
+                'data': data,
+            }
+        ),
+    )
 
-    def parse_error_detail(detail: str | dict) -> ResponseException:
-        if isinstance(detail, str):
-            try:
-                error_dict = json.loads(detail)
-            except json.JSONDecodeError:
-                error_dict = {'msg': detail, 'code': 500, 'custom': False}
-        else:
-            error_dict = detail
 
-        return ResponseException(**error_dict)
+def parse_error_detail(detail: str | dict) -> ResponseException:
+    if isinstance(detail, str):
+        try:
+            error_dict = json.loads(detail)
+        except json.JSONDecodeError:
+            error_dict = {'msg': detail, 'code': 500, 'custom': False}
+    else:
+        error_dict = detail
+    return ResponseException(**error_dict)
 
-    @app.exception_handler(HTTPException)
-    async def http_exception_handler(request: Request, exc: HTTPException):
-        error = parse_error_detail(exc.detail)
-        error.data['endpoint'] = request.url.path
-        return create_error_response(error)
 
-    @app.exception_handler(StarletteHTTPException)
-    async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
-        error = parse_error_detail(exc.detail)
-        error.data['endpoint'] = request.url.path
-        return create_error_response(error)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    error = parse_error_detail(exc.detail)
+    error.data['endpoint'] = request.url.path
+    return create_error_response(error)
 
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request: Request, exc: RequestValidationError):
-        error = ErrorCode.ValidationError.value
-        error.data = {
-            'endpoint': request.url.path,
-            'errors': exc.errors(),
-        }
-        return create_error_response(error)
+
+async def starlette_exception_handler(request: Request, exc: StarletteHTTPException):
+    error = parse_error_detail(exc.detail)
+    error.data['endpoint'] = request.url.path
+    return create_error_response(error)
+
+
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error = ErrorCode.ValidationError.value
+    error.data = {
+        'endpoint': request.url.path,
+        'errors': exc.errors(),
+    }
+    return create_error_response(error)

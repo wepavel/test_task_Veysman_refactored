@@ -2,10 +2,12 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import uvicorn
 
-from src.base_async.base_module.exception import exception_handler
+from src.base_async.base_module import http_exception_handler, starlette_exception_handler, validation_exception_handler
 from src.injectors.connections import pg
 from src.routers import api_router
 
@@ -17,19 +19,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 def setup_app() -> FastAPI:
-    project_name = os.getenv('PROJECT_NAME', 'Test Task Veysman Refactored')
-    project_desc = os.getenv('PROJECT_DESK', 'New refactored version of test task')
+    project_name = 'Test Task Veysman Refactored'
+    project_desc = 'New refactored version of test task'
 
     app = FastAPI(
         title=project_name,
         description=project_desc,
-        openapi_url='/api/openapi.json',
-        docs_url='/docs',
         lifespan=lifespan,
     )
 
-    exception_handler(app)
+    app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(StarletteHTTPException, starlette_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+
     app.include_router(api_router, prefix='/api')
+
     return app
 
 
@@ -39,8 +43,8 @@ app = setup_app()
 def main() -> None:
     uvicorn.run(
         app,
-        host=os.getenv('APP_HOST', '0.0.0.0'),
-        port=os.getenv('APP_PORT', 8001),
+        host='0.0.0.0',
+        port=8001,
     )
 
 
