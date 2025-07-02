@@ -18,9 +18,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 def setup_app() -> FastAPI:
-    project_name = 'Test Task Veysman Refactored'
-    project_desc = 'New refactored version of test task'
-
     app = FastAPI(
         lifespan=lifespan,
         docs_url=None,
