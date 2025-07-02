@@ -94,7 +94,6 @@ class EXC(HTTPException):
             update={'data': data},
         )
 
-        test = error_response.model_dump_json()
         super().__init__(status_code=400, detail=error_response.model_dump_json(), headers=None)
 
 
@@ -132,6 +131,7 @@ def parse_error_detail(detail: str | dict) -> ResponseException:
             error_dict = {'msg': detail, 'code': 500, 'custom': False}
     else:
         error_dict = detail
+
     return ResponseException(**error_dict)
 
 

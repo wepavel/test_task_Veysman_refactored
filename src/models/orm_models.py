@@ -84,8 +84,8 @@ class File(Model, table=True):
             comment=file.comment,
         )
 
-    @staticmethod
-    def format_time(dt) -> str | None:
+    @classmethod
+    def format_time(cls, dt) -> str | None:
         if dt is None:
             return None
         return dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -102,3 +102,7 @@ class File(Model, table=True):
             updated_at=self.format_time(self.updated_at),
             comment=self.comment,
         )
+
+    def get_full_path(self) -> str:
+        return f'{self.path}/{self.name}{self.extension}'
+

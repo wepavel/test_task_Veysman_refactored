@@ -76,16 +76,16 @@ class AsyncPgConnectionInj:
                 self._logger.error('Ошибка инициализации базы данны, ожидание', exc_info=True, extra={'e': e})
                 await asyncio.sleep(self._init_error_timeout)
 
-    async def _acquire_session(self) -> AsyncSession:
+    async def _acquire_session(self) -> async_scoped_session[AsyncSession]:
         if not self._pg:
             await self._init_db()
 
-        async with self._pg() as session, session.begin():
+        async with self._pg.begin():
             self._logger.info(f'Current role is {self._conf.user}')
-            await session.exec(text(f'SET ROLE {self._conf.user}'))
-            return session
+            await self._pg().exec(text(f'SET ROLE {self._conf.user}'))
+            return self._pg
 
-    async def acquire_session(self) -> AsyncSession:
+    async def acquire_session(self) -> async_scoped_session[AsyncSession]:
         for i in range(self._acquire_attempts):
             try:
                 return await self._acquire_session()
@@ -102,5 +102,3 @@ class AsyncPgConnectionInj:
     async def setup(self):
         await self.init_db()
 
-    def get_session(self) -> async_scoped_session[AsyncSession]:
-        return self._pg
