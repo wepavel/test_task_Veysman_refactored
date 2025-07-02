@@ -80,10 +80,10 @@ class AsyncPgConnectionInj:
         if not self._pg:
             await self._init_db()
 
-        async with self._pg.begin():
+        async with self._pg() as session, session.begin():
             self._logger.info(f'Current role is {self._conf.user}')
-            await self._pg.execute(text(f'SET ROLE {self._conf.user}'))
-            return self._pg
+            await session.execute(text(f'SET ROLE {self._conf.user}'))
+            return session
 
     async def acquire_session(self) -> async_scoped_session[AsyncSession]:
         for i in range(self._acquire_attempts):

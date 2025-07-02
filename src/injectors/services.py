@@ -8,5 +8,5 @@ async def files_service() -> FilesService:
     return FilesService(
         base_dir=config.storage_dir,
         pg=session,
-        fc=config.file_config
+        upload_chunk_size=config.file_config.upload_chunk_size
     )

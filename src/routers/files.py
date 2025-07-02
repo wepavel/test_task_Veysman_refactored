@@ -63,9 +63,9 @@ async def delete_file(*, fs: FilesService = Depends(files_service), id: str) -> 
 async def list_all_files(
         *,
         fs: FilesService = Depends(files_service),
-        prefix: str | None = None,
+        for_dir: str | None = None,
         skip: int = 0,
         limit: int = 10,
 ) -> list[FilePublic]:
     """Get metadata for files with pagination."""
-    return await fs.list_files(prefix=prefix, skip=skip, limit=limit)
+    return await fs.list_files(for_dir=for_dir, skip=skip, limit=limit)
