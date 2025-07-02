@@ -23,9 +23,10 @@ def setup_app() -> FastAPI:
     project_desc = 'New refactored version of test task'
 
     app = FastAPI(
-        title=project_name,
-        description=project_desc,
         lifespan=lifespan,
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None
     )
 
     app.add_exception_handler(HTTPException, http_exception_handler)

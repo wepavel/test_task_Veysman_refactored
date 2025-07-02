@@ -3,7 +3,7 @@ services:
     container_name: files
     image: 'backend:latest'
     depends_on:
-      - test_db
+      - postgres
     build:
       context: ./
     volumes:
