@@ -61,18 +61,22 @@ async def delete_file(*, fs: FilesService = Depends(files_service), id: str) -> 
     return await fs.delete_file(id)
 
 
-@router.get('/prefix/{path:path}')
-async def list_directory(*, fs: FilesService = Depends(files_service), prefix: str) -> list[FilePublic]:
-    """List contents of a directory."""
-    return await fs.list_dir(prefix)
+# @router.get('/files/prefix/{path:path}')
+# async def list_directory(*, fs: FilesService = Depends(files_service), prefix: str) -> list[FilePublic]:
+#     """List contents of a directory."""
+#     return await fs.list_dir(prefix)
 
 
-@router.get('/files')
+@router.get('/files/')
 async def list_all_files(
         *,
         fs: FilesService = Depends(files_service),
+        prefix: str | None = None,
         skip: int = 0,
         limit: int = 10,
 ) -> list[FilePublic]:
-    """Get metadata for all files with pagination."""
-    return await fs.list_all_files(skip=skip, limit=limit)
+    """Get metadata for files with pagination."""
+    if prefix is None:
+        return await fs.list_all_files(skip=skip, limit=limit)
+    else:
+        return await fs.list_dir(prefix)

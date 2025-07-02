@@ -24,9 +24,9 @@ def setup_app() -> FastAPI:
 
     app = FastAPI(
         lifespan=lifespan,
-        docs_url=None,
-        redoc_url=None,
-        openapi_url=None
+        # docs_url=None,
+        # redoc_url=None,
+        # openapi_url=None
     )
 
     app.add_exception_handler(HTTPException, http_exception_handler)
@@ -34,6 +34,8 @@ def setup_app() -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
     app.include_router(api_router, prefix='/api')
+
+    print([{"path": route.path, "name": route.name} for route in app.routes])
 
     return app
 

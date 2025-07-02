@@ -102,12 +102,6 @@ class FilesService:
         res = await db.exec(stmt)
         return res.one_or_none()
 
-    @staticmethod
-    async def _create(*, db: AsyncSession, obj_in: File) -> File:
-        db.add(obj_in)
-        await db.commit()
-        await db.refresh(obj_in)
-        return obj_in
 
     @staticmethod
     async def _update(*, db: AsyncSession, db_obj: File, obj_in: dict[str, Any]) -> File:
@@ -131,6 +125,11 @@ class FilesService:
         stmt = select(File).where(File.path == dir_path)
         res = await db.exec(stmt)
         return res.all()
+
+    @staticmethod
+    def assembly_full_path(file: File) -> str:
+        return f'{file.path}/{file.name}{file.extension}'
+
 
     async def add_file(
             self,
@@ -160,9 +159,11 @@ class FilesService:
                 raise EXC(ErrorCode.FileUploadingError)
 
             db_file = File.from_file_create(FileCreate(file_path=full_path, comment=''))
-            saved_file = await FilesService._create(db=session, obj_in=db_file)
+            session.add(db_file)
+            await session.commit()
+            await session.refresh(db_file)
 
-            return saved_file.to_public_file(self.base_dir)
+            return db_file.to_public_file(self.base_dir)
 
     async def update_file(
             self,
@@ -174,7 +175,7 @@ class FilesService:
         if not file_exists:
             raise EXC(ErrorCode.FileNotExists)
 
-        full_old_path = f'{file_record.path}/{file_record.name}{file_record.extension}'
+        full_old_path = self.assembly_full_path(file_record)
 
         if update_obj.new_dir_path is None:
             target_dir = file_record.path
@@ -238,23 +239,22 @@ class FilesService:
         if not file_exists:
             raise EXC(ErrorCode.FileNotExists)
 
-        full_path = f'{file_record.path}/{file_record.name}{file_record.extension}'
+        full_path = self.assembly_full_path(file_record)
 
         return self.file_generator(full_path, chunk_size), f'{file_record.name}{file_record.extension}'
 
     async def delete_file(self, id: str) -> FilePublic:
         async with self._pg() as session:
-            file_exists, file_record = await self._check_file(id, session, should_exist=True, get_file_type='id')
-        if not file_exists:
-            raise EXC(ErrorCode.FileNotExists)
+            file = await FilesService._get_file_by_id(db=session, id=id)
+            if not file:
+                raise EXC(ErrorCode.FileNotExists)
+            await session.delete(file)
+            await session.commit()
 
-        full_path = f'{file_record.path}/{file_record.name}{file_record.extension}'
-        async with self._pg() as session:
-            deleted_obj = await self._remove_by_id(db=session, id=id)
-
+        full_path = f'{file.path}/{file.name}{file.extension}'
         await asyncio.to_thread(os.remove, full_path)
 
-        return deleted_obj.to_public_file(self.base_dir)
+        return file.to_public_file(self.base_dir)
 
     async def get_file_info(self, id: str) -> FilePublic:
         async with self._pg() as session:
