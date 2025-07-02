@@ -1,6 +1,5 @@
 from src.config import config
 from src.services import FilesService
-import asyncio
 from . import connections
 
 

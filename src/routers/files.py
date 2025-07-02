@@ -14,9 +14,7 @@ async def create_file(
         *,
         fs: FilesService = Depends(files_service),
         dir_path: str,
-        input_file: UploadFile = FastapiFile(
-            ...,
-        ),
+        input_file: UploadFile = FastapiFile(...),
 ) -> FilePublic:
     """Upload a file to storage at the given path."""
     return await fs.add_file(dir_path, input_file)
@@ -61,12 +59,6 @@ async def delete_file(*, fs: FilesService = Depends(files_service), id: str) -> 
     return await fs.delete_file(id)
 
 
-# @router.get('/files/prefix/{path:path}')
-# async def list_directory(*, fs: FilesService = Depends(files_service), prefix: str) -> list[FilePublic]:
-#     """List contents of a directory."""
-#     return await fs.list_dir(prefix)
-
-
 @router.get('/files/')
 async def list_all_files(
         *,
@@ -76,7 +68,4 @@ async def list_all_files(
         limit: int = 10,
 ) -> list[FilePublic]:
     """Get metadata for files with pagination."""
-    if prefix is None:
-        return await fs.list_all_files(skip=skip, limit=limit)
-    else:
-        return await fs.list_dir(prefix)
+    return await fs.list_files(prefix=prefix, skip=skip, limit=limit)

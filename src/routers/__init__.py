@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .file import router  # noqa: F401
+from .files import router  # noqa: F401
 
 api_router = APIRouter()
-api_router.include_router(file.router, tags=['Files'])
+api_router.include_router(files.router, tags=['Files'])
