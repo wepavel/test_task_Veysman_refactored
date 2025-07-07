@@ -10,7 +10,6 @@ import aiofiles
 from fastapi import UploadFile
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import async_scoped_session
 
 from src.base_async.base_module import EXC, ErrorCode
 

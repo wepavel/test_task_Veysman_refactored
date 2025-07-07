@@ -4,9 +4,9 @@ pg:
   user: postgres
   password: postgres
   database: database
-  schema: 'external_modules'
+  schema: external_modules
 
-storage_dir: file_storage
+storage_dir: /file_storage
 
 file_config:
   upload_chunk_size: 5242880

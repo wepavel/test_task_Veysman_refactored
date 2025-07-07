@@ -9,8 +9,12 @@ services:
       - .:/src/
       - /etc/localtime:/etc/localtime:ro
     restart: always
+    expose:
+      - 8001
     ports:
       - "8023:8001"
+    networks:
+      - image-processing-net
     command: ["python", "./src/app.py"]
 
   postgres:
@@ -28,5 +32,12 @@ services:
       - 5432
     ports:
       - "5434:5432"
+    networks:
+      - image-processing-net
+
 volumes:
   test_pgdata:
+
+networks:
+  image-processing-net:
+    name: image-processing-net
