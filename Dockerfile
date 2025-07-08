@@ -13,5 +13,9 @@ ADD ./README.md /src/README.md
 RUN uv pip install --no-cache --system -r pyproject.toml
 
 
-COPY ./src /src
+COPY ./src /src/src
+COPY ./config.yaml /src/config.yaml
+
 ENV PYTHONPATH=/src
+
+CMD ["python", "src/app.py"]
